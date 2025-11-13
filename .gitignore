@@ -53,3 +53,73 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+
+Debug/
+.vscode/
+*.code-workspace
+*.log
+*.tmp
+build/
+*.o
+*.elf
+*.bin
+*.map
+*.axf
+*.d
+
+
+# LaTeX intermediate files
+*.aux
+*.bbl
+*.blg
+*.brf
+*.idx
+*.ind
+*.ilg
+*.toc
+*.out
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.dvi
+*.ps
+*.run.xml
+latexmk.log
+
+# minted cache
+_minted*/
+
+# ModelSim / Questa files
+transcript
+vsim.wlf
+*.wlf
+*.wlf.*        # some tools append suffixes
+work/
+work-*         # compiled library dirs (platform-specific names)
+work-obj93.cf  # ModelSim compiled library map
+*.cf           # other compile map files
+modelsim.ini
+modelsim.ini.* # backups
+modelsim.dump
+
+# Waveform / trace / VCD files
+*.vcd
+*.vwf
+*.wdb
+
+# SimVision / GUI state
+.simvision/
+simvision.*
+*.svf
+
+# temporary / editor backups (useful for sim files too)
+*~
+*.bak
+*.tmp
