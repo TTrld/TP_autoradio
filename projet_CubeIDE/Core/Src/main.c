@@ -118,6 +118,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
 }
 
+
+
 /* USER CODE END 0 */
 
 /**
@@ -152,7 +154,8 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
-  printf("Bonjour Antonio y Louis\r\n");
+  MCP23S17_Init();
+  MCP23S17_SetAllPinsHigh();
 
   // Création de la queue
   counterQueue = xQueueCreate(QUEUE_LENGTH, QUEUE_ITEM_SIZE);
@@ -166,6 +169,8 @@ int main(void)
       printf("Error creating task Shell\r\n");
       Error_Handler();
   }
+
+
 
   /* USER CODE END 2 */
 
