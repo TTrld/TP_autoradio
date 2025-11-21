@@ -155,7 +155,9 @@ int main(void)
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
   MCP23S17_Init();
-  MCP23S17_SetAllPinsHigh();
+  HAL_Delay(1000);
+  MCP23S17_SetAllPinsLow();
+  MCP23S17_SetLed(10);
 
   // Création de la queue
   counterQueue = xQueueCreate(QUEUE_LENGTH, QUEUE_ITEM_SIZE);

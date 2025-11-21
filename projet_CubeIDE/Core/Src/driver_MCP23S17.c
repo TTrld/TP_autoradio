@@ -75,6 +75,68 @@ MCP23S17_WriteRegister(MCP23S17_GPIOB, 0x1); // Set all GPIOB high
 // Alternatively, use OLAT if needed: MCP23S17_WriteRegister(MCP23S17_OLATA, 0xFF);
 }
 
+// Set all pins to low
+void MCP23S17_SetAllPinsLow(void) {
+MCP23S17_WriteRegister(MCP23S17_GPIOA, 0xFF); // Set all GPIOA low
+MCP23S17_WriteRegister(MCP23S17_GPIOB, 0xFF); // Set all GPIOB low
+}
+
+
+// Allume une LED (0 à 15)
+void MCP23S17_SetLed(uint8_t ledIndex)
+{
+    if (ledIndex > 15) return;  // Sécurité
+
+    uint8_t reg, currentValue;
+
+    if (ledIndex < 8) {
+        // GPIOA
+        reg = MCP23S17_GPIOA;
+        currentValue = MCP23S17_ReadRegister(MCP23S17_GPIOA);
+
+        currentValue &= ~(1 << ledIndex);   // Mettre à 0.
+
+        MCP23S17_WriteRegister(reg, currentValue);
+    }
+    else {
+        // GPIOB
+        reg = MCP23S17_GPIOB;
+        ledIndex -= 8;  // Ramener à 0-7
+        currentValue = MCP23S17_ReadRegister(MCP23S17_GPIOB);
+
+        currentValue &= ~(1 << ledIndex);
+
+        MCP23S17_WriteRegister(reg, currentValue);
+    }
+}
+
+void MCP23S17_ClearLed(uint8_t ledIndex)
+{
+    if (ledIndex > 15) return;
+
+    uint8_t reg, currentValue;
+
+    if (ledIndex < 8) {
+        reg = MCP23S17_GPIOA;
+        currentValue = MCP23S17_ReadRegister(MCP23S17_GPIOA);
+
+        currentValue |= (1 << ledIndex);   // Mettre à 1 → éteindre
+
+        MCP23S17_WriteRegister(reg, currentValue);
+    }
+    else {
+        reg = MCP23S17_GPIOB;
+        ledIndex -= 8;
+        currentValue = MCP23S17_ReadRegister(MCP23S17_GPIOB);
+
+        currentValue |= (1 << ledIndex);   // Mettre à 1 → éteindre
+
+        MCP23S17_WriteRegister(reg, currentValue);
+    }
+}
+
+
+
 // In your main function, after HAL_Init() and SPI3 init:
 // MCP23S17_Init();
 // Then call MCP23S17_SetAllPinsHigh() when needed.
