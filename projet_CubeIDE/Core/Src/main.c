@@ -19,6 +19,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "dma.h"
+#include "i2c.h"
+#include "sai.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
@@ -28,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "shell.h"
+#include "sgtl5000.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,6 +58,7 @@ QueueHandle_t counterQueue;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void PeriphCommonClock_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 static int fonction(h_shell_t *shell, int argc, char **argv);
@@ -171,19 +176,27 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
+  /* Configure the peripherals common clocks */
+  PeriphCommonClock_Config();
+
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_SPI3_Init();
+  MX_I2C2_Init();
+  MX_SAI2_Init();
   /* USER CODE BEGIN 2 */
   MCP23S17_Init();
   //HAL_Delay(1000);
   MCP23S17_SetAllPinsLow();
   //MCP23S17_SetLed(10);
+
+  __HAL_SAI_ENABLE(&hsai_BlockA2);
 
   // Création de la queue
   counterQueue = xQueueCreate(QUEUE_LENGTH, QUEUE_ITEM_SIZE);
@@ -197,6 +210,12 @@ int main(void)
       printf("Error creating task Shell\r\n");
       Error_Handler();
   }
+
+  uint8_t chip_id = 0;
+  HAL_I2C_Mem_Read(&hi2c2, 0x14, 0x0000, I2C_MEMADD_SIZE_16BIT, &chip_id, 1, HAL_MAX_DELAY);
+  HAL_SAI_Transmit_DMA(&hsai_BlockA2, 'coucou', 6);
+  HAL_SAI_Receive_DMA(&hsai_BlockA2, 'coucou', 6);
+
 
 
 
@@ -269,6 +288,31 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief Peripherals Common Clock Configuration
+  * @retval None
+  */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_SAI2;
+  PeriphClkInit.Sai2ClockSelection = RCC_SAI2CLKSOURCE_PLLSAI1;
+  PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_HSI;
+  PeriphClkInit.PLLSAI1.PLLSAI1M = 1;
+  PeriphClkInit.PLLSAI1.PLLSAI1N = 13;
+  PeriphClkInit.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV17;
+  PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
+  PeriphClkInit.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
+  PeriphClkInit.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
