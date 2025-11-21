@@ -112,30 +112,30 @@ void MCP23S17_SetLed(uint8_t ledIndex)
 
 void MCP23S17_ClearLed(uint8_t ledIndex)
 {
-    if (ledIndex > 15) return;
+    if (ledIndex > 15) return;  // Sécurité
 
     uint8_t reg, currentValue;
 
     if (ledIndex < 8) {
+        // GPIOA
         reg = MCP23S17_GPIOA;
         currentValue = MCP23S17_ReadRegister(MCP23S17_GPIOA);
 
-        currentValue |= (1 << ledIndex);   // Mettre à 1 → éteindre
+        currentValue |= (1 << ledIndex);   // Mettre à 0.
 
         MCP23S17_WriteRegister(reg, currentValue);
     }
     else {
+        // GPIOB
         reg = MCP23S17_GPIOB;
-        ledIndex -= 8;
+        ledIndex -= 8;  // Ramener à 0-7
         currentValue = MCP23S17_ReadRegister(MCP23S17_GPIOB);
 
-        currentValue |= (1 << ledIndex);   // Mettre à 1 → éteindre
+        currentValue |= (1 << ledIndex);
 
         MCP23S17_WriteRegister(reg, currentValue);
     }
 }
-
-
 
 // In your main function, after HAL_Init() and SPI3 init:
 // MCP23S17_Init();

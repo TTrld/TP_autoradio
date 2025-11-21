@@ -58,6 +58,7 @@ void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 static int fonction(h_shell_t *shell, int argc, char **argv);
 static int addition(h_shell_t *shell, int argc, char **argv);
+static int led(h_shell_t *shell, int argc, char **argv);
 void task_shell(void *unused);
 /* USER CODE END PFP */
 
@@ -103,6 +104,8 @@ void task_shell(void *unused)
     shell_init(&shell_instance);
     shell_add(&shell_instance, 'f', fonction, "Une fonction inutile");
     shell_add(&shell_instance, 'a', addition, "Ma super addition");
+    shell_add(&shell_instance, 'l', led, "put ledx in x");
+
 
     shell_run(&shell_instance); // Contient une boucle infinie
 
@@ -117,6 +120,29 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         shell_uart_rx_callback();
     }
 }
+
+static int led(h_shell_t *shell, int argc, char **argv)
+{
+	int size;
+    for (int i = 0; i < argc; i++)
+    {
+        size = snprintf(shell->print_buffer, BUFFER_SIZE, "argv[%d]=%s\r\n", i, argv[i]);
+        shell_uart_write(shell->print_buffer, size);
+    }
+	if (argc != 3){
+		Error_Handler();
+	}
+	if (atoi(argv[2]) == 1){
+		MCP23S17_SetLed(atoi(argv[1]));
+		printf("La LED s'allume.\r\n");
+	}
+	else if (atoi(argv[2]) == 0){
+		MCP23S17_ClearLed(atoi(argv[1]));
+		printf("La LED s'éteint.\r\n");
+	}
+	return 0;
+}
+
 
 
 
@@ -155,9 +181,9 @@ int main(void)
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
   MCP23S17_Init();
-  HAL_Delay(1000);
+  //HAL_Delay(1000);
   MCP23S17_SetAllPinsLow();
-  MCP23S17_SetLed(10);
+  //MCP23S17_SetLed(10);
 
   // Création de la queue
   counterQueue = xQueueCreate(QUEUE_LENGTH, QUEUE_ITEM_SIZE);
@@ -171,6 +197,10 @@ int main(void)
       printf("Error creating task Shell\r\n");
       Error_Handler();
   }
+
+
+
+
 
 
 
