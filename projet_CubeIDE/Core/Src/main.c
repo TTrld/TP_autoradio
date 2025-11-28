@@ -43,6 +43,7 @@
 /* USER CODE BEGIN PD */
 #define QUEUE_LENGTH 5
 #define QUEUE_ITEM_SIZE sizeof(uint32_t)
+#define BUFF_SIZE 64
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,6 +55,9 @@
 
 /* USER CODE BEGIN PV */
 QueueHandle_t counterQueue;
+#define AUDIO_BUFFER_SIZE 2048
+uint8_t tx_buffer[AUDIO_BUFFER_SIZE]; // Buffer d'émission (vers DAC/Codec)
+uint8_t rx_buffer[AUDIO_BUFFER_SIZE]; // Buffer de réception (depuis ADC/Micro)
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -149,6 +153,46 @@ static int led(h_shell_t *shell, int argc, char **argv)
 }
 
 
+int16_t txBuffer[AUDIO_BUFFER_SIZE];
+int16_t rxBuffer[AUDIO_BUFFER_SIZE];
+
+void Generate_Triangle_Wave(uint8_t *buffer, uint32_t sizeInBytes) {
+    int16_t *pSample = (int16_t *)buffer;
+
+    // 16 bits = 2 octets. Stereo = 2 canaux.
+    // Donc 1 "Frame" audio (Gauche + Droite) = 4 octets.
+    uint32_t totalFrames = sizeInBytes / 4;
+
+    // On divise le buffer en deux phases : Montée et Descente
+    uint32_t halfPeriod = totalFrames / 2;
+
+    int16_t amplitude = 15000;
+    float step = (float)(amplitude * 2) / (float)halfPeriod;
+    float currentVal = -15000.0f;
+
+    // Phase 1 : Montée
+    for (uint32_t i = 0; i < halfPeriod; i++) {
+        int16_t val = (int16_t)currentVal;
+
+        pSample[i * 2]     = val; // Canal Gauche
+        pSample[i * 2 + 1] = val; // Canal Droit (identique pour du mono centré)
+
+        currentVal += step;
+    }
+
+    // Phase 2 : Descente
+    currentVal = 15000.0f;
+    for (uint32_t i = halfPeriod; i < totalFrames; i++) {
+        int16_t val = (int16_t)currentVal;
+
+        pSample[i * 2]     = val;
+        pSample[i * 2 + 1] = val;
+
+        currentVal -= step;
+    }
+}
+
+
 
 
 /* USER CODE END 0 */
@@ -191,12 +235,14 @@ int main(void)
   MX_I2C2_Init();
   MX_SAI2_Init();
   /* USER CODE BEGIN 2 */
+
   MCP23S17_Init();
   //HAL_Delay(1000);
   MCP23S17_SetAllPinsLow();
   //MCP23S17_SetLed(10);
 
   __HAL_SAI_ENABLE(&hsai_BlockA2);
+
 
   // Création de la queue
   counterQueue = xQueueCreate(QUEUE_LENGTH, QUEUE_ITEM_SIZE);
@@ -213,8 +259,21 @@ int main(void)
 
   uint8_t chip_id = 0;
   HAL_I2C_Mem_Read(&hi2c2, 0x14, 0x0000, I2C_MEMADD_SIZE_16BIT, &chip_id, 1, HAL_MAX_DELAY);
-  HAL_SAI_Transmit_DMA(&hsai_BlockA2, 'coucou', 6);
-  HAL_SAI_Receive_DMA(&hsai_BlockA2, 'coucou', 6);
+
+  uint16_t sgtl_address = 0x14;
+	uint16_t data;
+
+	h_sgtl5000_t h_sgtl5000;
+	h_sgtl5000.hi2c = &hi2c2;
+	h_sgtl5000.dev_address = sgtl_address;
+
+	sgtl5000_init(&h_sgtl5000);
+
+	generateTriangle(txBuffer, AUDIO_BUFFER_SIZE, 10000);
+	//generateSquare(txBuffer, AUDIO_BUFFER_SIZE, 30000);
+	HAL_SAI_Transmit_DMA(&hsai_BlockA2, (int16_t*)txBuffer, AUDIO_BUFFER_SIZE);
+	HAL_SAI_Receive_DMA(&hsai_BlockB2, (int16_t*)rxBuffer, AUDIO_BUFFER_SIZE);
+
 
 
 
