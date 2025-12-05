@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include "shell.h"
 #include "sgtl5000.h"
+#include <stdint.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,7 +44,11 @@
 /* USER CODE BEGIN PD */
 #define QUEUE_LENGTH 5
 #define QUEUE_ITEM_SIZE sizeof(uint32_t)
-#define BUFF_SIZE 64
+#define BUFF_SIZE 2048
+
+#define SAMPLE_RATE     48000.0f  // Fréquence d'échantillonnage (48kHz)
+#define TRIANGLE_FREQ   220.0f // Fréquence du son (La 440)
+#define AMPLITUDE       15000     // Volume max (int16 max est 32767)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -153,8 +158,7 @@ static int led(h_shell_t *shell, int argc, char **argv)
 }
 
 
-int16_t txBuffer[AUDIO_BUFFER_SIZE];
-int16_t rxBuffer[AUDIO_BUFFER_SIZE];
+
 
 void Generate_Triangle_Wave(uint8_t *buffer, uint32_t sizeInBytes) {
     int16_t *pSample = (int16_t *)buffer;
@@ -192,7 +196,50 @@ void Generate_Triangle_Wave(uint8_t *buffer, uint32_t sizeInBytes) {
     }
 }
 
+/*
+void Generate_Triangle_Wave(uint8_t *buffer, uint32_t sizeInBytes) {
+    int16_t *pSample = (int16_t *)buffer;
 
+    // Nombre total d'échantillons (Frames) dans ce buffer
+    // 1 Frame = 2 samples (Gauche + Droite) = 4 octets
+    uint32_t totalFrames = sizeInBytes / 4;
+
+    // --- VARIABLES STATIQUES (Mémorisation de l'état) ---
+    // Elles gardent leur valeur entre deux appels de la fonction
+    static float currentVal = 0.0f;
+    static int8_t direction = 1; // 1 = Montée, -1 = Descente
+
+    // Calcul du pas d'incrément par échantillon
+    // Formule : (Amplitude * 4 * Freq) / Fs
+    // On multiplie par 4 car une période fait : 0->Max->0->Min->0 (4 segments d'amplitude)
+    // Ou plus simplement : Montée de -Amp à +Amp (2*Amp) en une demi-période.
+    float step = (AMPLITUDE * 4.0f * TRIANGLE_FREQ) / SAMPLE_RATE;
+
+    for (uint32_t i = 0; i < totalFrames; i++) {
+
+        // 1. Mise à jour de la valeur
+        if (direction == 1) {
+            currentVal += step;
+            if (currentVal >= AMPLITUDE) {
+                currentVal = AMPLITUDE;
+                direction = -1; // On change de sens vers le bas
+            }
+        } else {
+            currentVal -= step;
+            if (currentVal <= -AMPLITUDE) {
+                currentVal = -AMPLITUDE;
+                direction = 1; // On change de sens vers le haut
+            }
+        }
+
+        // 2. Écriture dans le buffer (Stereo)
+        int16_t valInt = (int16_t)currentVal;
+
+        pSample[i * 2]     = valInt; // Canal Gauche
+        pSample[i * 2 + 1] = valInt; // Canal Droit
+    }
+}
+*/
 
 
 /* USER CODE END 0 */
@@ -269,10 +316,19 @@ int main(void)
 
 	sgtl5000_init(&h_sgtl5000);
 
-	generateTriangle(txBuffer, AUDIO_BUFFER_SIZE, 10000);
+	Generate_Triangle_Wave(tx_buffer, AUDIO_BUFFER_SIZE);
 	//generateSquare(txBuffer, AUDIO_BUFFER_SIZE, 30000);
-	HAL_SAI_Transmit_DMA(&hsai_BlockA2, (int16_t*)txBuffer, AUDIO_BUFFER_SIZE);
-	HAL_SAI_Receive_DMA(&hsai_BlockB2, (int16_t*)rxBuffer, AUDIO_BUFFER_SIZE);
+	if (HAL_SAI_Transmit_DMA(&hsai_BlockA2, tx_buffer, AUDIO_BUFFER_SIZE/ 4) != HAL_OK)
+	{
+		printf("Erreur demarrage SAI TX DMA\r\n");
+		Error_Handler();
+	}
+
+	if (HAL_SAI_Receive_DMA(&hsai_BlockB2, rx_buffer, AUDIO_BUFFER_SIZE/ 4) != HAL_OK)
+	{
+		printf("Erreur demarrage SAI RX DMA\r\n");
+		Error_Handler();
+	}
 
 
 
