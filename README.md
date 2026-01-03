@@ -39,7 +39,18 @@ On suit les étapes de configuration de l'I2C, du SAI, puis du DMA.
 
 ![TRAM DOUT](ressources/tram%20dout.png)
 
-<<<<<<< HEAD
+### Signaux d'horloge
+
+On peut observer les **différents signaux d'horloge**, avec leurs **fréquences associées**. Ce sont les fréquences demandées, ce qui atteste d'une bonne configuration.
+
+![clock1](ressources/clock1.jpeg)
+
+![clock2](ressources/clock2.jpeg)
+
+![clock3](ressources/clock3.jpeg)
+
+On génère ensuite un **signal triangle** avec succès.
+
 ### Signal triangulaire
 
 
@@ -243,15 +254,3 @@ void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hsai)
 ```
 =======
 
-### Signaux d'horloge
-
-On peut observer les **différents signaux d'horloge**, avec leurs **fréquences associées**. Ce sont les fréquences demandées, ce qui atteste d'une bonne configuration.
-
-![clock1](ressources/clock1.jpeg)
-
-![clock2](ressources/clock2.jpeg)
-
-![clock3](ressources/clock3.jpeg)
-
-On génère ensuite un **signal triangle** avec succès.
->>>>>>> ce416b1f96b967168b6fa6a4d1436c0931e68276
