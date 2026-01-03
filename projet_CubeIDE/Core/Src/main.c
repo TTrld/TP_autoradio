@@ -196,51 +196,6 @@ void Generate_Triangle_Wave(uint8_t *buffer, uint32_t sizeInBytes) {
     }
 }
 
-/*
-void Generate_Triangle_Wave(uint8_t *buffer, uint32_t sizeInBytes) {
-    int16_t *pSample = (int16_t *)buffer;
-
-    // Nombre total d'échantillons (Frames) dans ce buffer
-    // 1 Frame = 2 samples (Gauche + Droite) = 4 octets
-    uint32_t totalFrames = sizeInBytes / 4;
-
-    // --- VARIABLES STATIQUES (Mémorisation de l'état) ---
-    // Elles gardent leur valeur entre deux appels de la fonction
-    static float currentVal = 0.0f;
-    static int8_t direction = 1; // 1 = Montée, -1 = Descente
-
-    // Calcul du pas d'incrément par échantillon
-    // Formule : (Amplitude * 4 * Freq) / Fs
-    // On multiplie par 4 car une période fait : 0->Max->0->Min->0 (4 segments d'amplitude)
-    // Ou plus simplement : Montée de -Amp à +Amp (2*Amp) en une demi-période.
-    float step = (AMPLITUDE * 4.0f * TRIANGLE_FREQ) / SAMPLE_RATE;
-
-    for (uint32_t i = 0; i < totalFrames; i++) {
-
-        // 1. Mise à jour de la valeur
-        if (direction == 1) {
-            currentVal += step;
-            if (currentVal >= AMPLITUDE) {
-                currentVal = AMPLITUDE;
-                direction = -1; // On change de sens vers le bas
-            }
-        } else {
-            currentVal -= step;
-            if (currentVal <= -AMPLITUDE) {
-                currentVal = -AMPLITUDE;
-                direction = 1; // On change de sens vers le haut
-            }
-        }
-
-        // 2. Écriture dans le buffer (Stereo)
-        int16_t valInt = (int16_t)currentVal;
-
-        pSample[i * 2]     = valInt; // Canal Gauche
-        pSample[i * 2 + 1] = valInt; // Canal Droit
-    }
-}
-*/
-
 
 /* USER CODE END 0 */
 
@@ -315,8 +270,10 @@ int main(void)
 	h_sgtl5000.dev_address = sgtl_address;
 
 	sgtl5000_init(&h_sgtl5000);
+	sgtl5000_i2c_write_register(&h_sgtl5000, SGTL5000_CHIP_ANA_CTRL, 0x0000); // SELECT_ADC=MIC
 
-	Generate_Triangle_Wave(tx_buffer, AUDIO_BUFFER_SIZE);
+
+	//Generate_Triangle_Wave(tx_buffer, AUDIO_BUFFER_SIZE);
 	//generateSquare(txBuffer, AUDIO_BUFFER_SIZE, 30000);
 	if (HAL_SAI_Transmit_DMA(&hsai_BlockA2, tx_buffer, AUDIO_BUFFER_SIZE/ 4) != HAL_OK)
 	{
