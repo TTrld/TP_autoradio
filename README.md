@@ -17,18 +17,37 @@ Dans un premier temps, on suit les étapes de démarrage du projet. On teste les
 
 Pour faire fonctionner le GPIO Expander, on configure le SPI en **"Full-Duplex Master"**. On met une **Data Size** de **8 bits**, puis on change le **PSC** à **32** afin d'avoir un **baudrate** de **2.5Mb/s**.
 
+
+
+## Tests
+
+Avant de passer au SGTL5000, on réalise le **driver** pour les leds, ainsi que des **commandes** qu'on appelle avec le shell, avec lesquels on commande l'état de chaque LED indépendant des autres.   
+**Toutes ces étapes ont été vérifiées en classe par le professeur.**
+
+## SGTL5000
+
+On suit les étapes de configuration de l'I2C, du SAI, puis du DMA.
 ### I2C
 
 - **Pins utilisées** : PB10 et PB11
 - **Bus I2C** : I2C2
 
-## Tests
-
-Avant de passer au SGTL5000, on réalise le **driver** pour les leds, ainsi que des **commandes** qu'on appelle avec le shell, avec lesquels on commande l'état de chaque LED indépendant des autres. 
-Toutes ces étapes ont été vérifiées en classe par le professeur.
 ### TRAM DOUT
 
 - **Interface de communication** pour la transmission de données
 - Permet la sortie de données numériques vers les dispositifs externes
 
 ![TRAM DOUT](ressources/tram%20dout.png)
+
+
+### Signaux d'horloge
+
+On peut observer les différents signaux d'horloge, avec leurs fréquences associées. Ce sont les fréquences demandées, ce qui atteste d'une bonne configuration.
+
+![clock1](ressources/clock1.jpeg)
+
+![clock2](ressources/clock2.jpeg)
+
+![clock3](ressources/clock3.jpeg)
+
+On génère ensuite un signal triangle avec succès.
