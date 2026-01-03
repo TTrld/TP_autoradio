@@ -1,5 +1,9 @@
 # TP_autoradio
 
+## Démarrage
+
+Dans un premier temps, on suit les étapes de démarrage du projet. On teste les différents périphériques (LEDs, USART2, printf), et on fait en sorte que notre shell fonctionne.
+
 ## Configuration matérielle
 
 ### GPIO Expander
