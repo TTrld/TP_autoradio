@@ -23,6 +23,7 @@
 
 ![TRAM DOUT](ressources/tram%20dout.png)
 
+<<<<<<< HEAD
 ### Signal triangulaire
 
 
