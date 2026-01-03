@@ -42,7 +42,7 @@ On suit les étapes de configuration de l'I2C, du SAI, puis du DMA.
 
 ### Signaux d'horloge
 
-On peut observer les différents signaux d'horloge, avec leurs fréquences associées. Ce sont les fréquences demandées, ce qui atteste d'une bonne configuration.
+On peut observer les **différents signaux d'horloge**, avec leurs **fréquences associées**. Ce sont les fréquences demandées, ce qui atteste d'une bonne configuration.
 
 ![clock1](ressources/clock1.jpeg)
 
@@ -50,4 +50,4 @@ On peut observer les différents signaux d'horloge, avec leurs fréquences assoc
 
 ![clock3](ressources/clock3.jpeg)
 
-On génère ensuite un signal triangle avec succès.
+On génère ensuite un **signal triangle** avec succès.
